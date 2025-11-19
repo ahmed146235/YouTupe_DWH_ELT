@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
- 
+
 # Basic Airflow cluster configuration for CeleryExecutor with Redis and PostgreSQL.
 #
 # WARNING: This configuration is for local development. Do not use it in a production deployment.
@@ -48,10 +48,10 @@ x-airflow-common:
   &airflow-common
   # Use custom image that builds on top of default airflow image (currently; Default: apache/airflow:2.9.2)
   # Image stored on Dockerhub
-  image: ${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG}
+  image: ${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPOSITORY}:latest
   # Use the .env file to read the connection params and variables - SWITCH THIS OFF WHEN USING GITHUB ACTIONS
-  env_file:
-    - .env
+  # env_file:
+  #   - .env
   environment:
     &airflow-common-env
     # Set executor to CeleryExecutor 
@@ -106,29 +106,29 @@ x-airflow-common:
       condition: service_healthy
     postgres:
       condition: service_healthy
- 
+
 services:
   postgres:
     container_name: postgres
     image: postgres:13
     # Use the .env file to read the connection params - SWITCH THIS OFF WHEN USING GITHUB ACTIONS
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     # Env vars after POSTGRES_PASSWORD are needed for CI-CD workflow - SWITCH THIS ALL ON WHEN USING GITHUB ACTIONS
     environment:
       - POSTGRES_USER=${POSTGRES_CONN_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_CONN_PASSWORD}
-    #   - METADATA_DATABASE_NAME=${METADATA_DATABASE_NAME}
-    #   - METADATA_DATABASE_USERNAME=${METADATA_DATABASE_USERNAME}
-    #   - METADATA_DATABASE_PASSWORD=${METADATA_DATABASE_PASSWORD}
-    #   - ELT_DATABASE_NAME=${ELT_DATABASE_NAME}
-    #   - ELT_DATABASE_USERNAME=${ELT_DATABASE_USERNAME}
-    #   - ELT_DATABASE_PASSWORD=${ELT_DATABASE_PASSWORD}
-    #   - CELERY_BACKEND_NAME=${CELERY_BACKEND_NAME}
-    #   - CELERY_BACKEND_USERNAME=${CELERY_BACKEND_USERNAME}
-    #   - CELERY_BACKEND_PASSWORD=${CELERY_BACKEND_PASSWORD}
-    #   - POSTGRES_CONN_HOST=${POSTGRES_CONN_HOST}
-    #   - POSTGRES_CONN_PORT=${POSTGRES_CONN_PORT}
+      - METADATA_DATABASE_NAME=${METADATA_DATABASE_NAME}
+      - METADATA_DATABASE_USERNAME=${METADATA_DATABASE_USERNAME}
+      - METADATA_DATABASE_PASSWORD=${METADATA_DATABASE_PASSWORD}
+      - ELT_DATABASE_NAME=${ELT_DATABASE_NAME}
+      - ELT_DATABASE_USERNAME=${ELT_DATABASE_USERNAME}
+      - ELT_DATABASE_PASSWORD=${ELT_DATABASE_PASSWORD}
+      - CELERY_BACKEND_NAME=${CELERY_BACKEND_NAME}
+      - CELERY_BACKEND_USERNAME=${CELERY_BACKEND_USERNAME}
+      - CELERY_BACKEND_PASSWORD=${CELERY_BACKEND_PASSWORD}
+      - POSTGRES_CONN_HOST=${POSTGRES_CONN_HOST}
+      - POSTGRES_CONN_PORT=${POSTGRES_CONN_PORT}
     ports:
       - 5432:5432
     volumes:
@@ -141,7 +141,7 @@ services:
       retries: 5
       start_period: 5s
     restart: always
- 
+
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
     # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
@@ -156,7 +156,7 @@ services:
       retries: 50
       start_period: 30s
     restart: always
- 
+
   airflow-webserver:
     <<: *airflow-common
     command: webserver
@@ -174,7 +174,7 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
- 
+
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
@@ -190,7 +190,7 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
- 
+
   airflow-worker:
     <<: *airflow-common
     command: celery worker
@@ -213,7 +213,7 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
- 
+
   # airflow-triggerer:
   #   <<: *airflow-common
   #   command: triggerer
@@ -229,7 +229,7 @@ services:
   #     <<: *airflow-common-depends-on
   #     airflow-init:
   #       condition: service_completed_successfully
- 
+
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
@@ -292,7 +292,7 @@ services:
     user: "0:0"
     volumes:
       - .:/sources
- 
+
   airflow-cli:
     <<: *airflow-common
     profiles:
@@ -305,7 +305,7 @@ services:
       - bash
       - -c
       - airflow
- 
+
   # # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # # or by explicitly targeted on the command line e.g. docker-compose up flower.
   # # See: https://docs.docker.com/compose/profiles/
@@ -328,6 +328,6 @@ services:
   #     <<: *airflow-common-depends-on
   #     airflow-init:
   #       condition: service_completed_successfully
- 
+
 volumes:
   postgres-db-volume:
